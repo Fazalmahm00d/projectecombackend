@@ -16,7 +16,7 @@ const app=express();
 
 
 const url=process.env.MONGO_URI;
-
+const secret=process.env.JWT_SECRET;
 
 app.use(cors())
 app.use(express.json());
@@ -95,7 +95,7 @@ app.post('/login', async (req,res)=>{
         if(isEmail){
             const isMatch=await bcrypt.compare(password, isEmail.password);
             if(isMatch){
-                const token=jwt.sign(email,"ske0293")
+                const token=jwt.sign(email,secret)
                 res.status(200).json({message:"Login successfully",token})
             }else{
                 res.status(401).json({ message:"Email or password is incorrect"})
