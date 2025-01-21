@@ -18,7 +18,11 @@ const app=express();
 const url=process.env.MONGO_URI;
 const secret=process.env.JWT_SECRET;
 
-app.use(cors())
+// In your backend Express app
+
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://nextprojecom.vercel.app/']
+}));
 app.use(express.json());
 
 
@@ -31,9 +35,10 @@ mongoose.connect(url).then(()=>{
 
 app.post('/cart/new', async (req, res) => {
     const { email, img , name ,desc, price , quantity } = req.body;
-
+    console.log(req.body ,"body send")
     try {
         let cart = await Cart.findOne({ email });
+        console.log("cart found")
         if (!cart) {
             cart = new Cart({
                 email,
@@ -44,7 +49,7 @@ app.post('/cart/new', async (req, res) => {
         if (productIndex !== -1) {
             cart.items[productIndex].quantity += quantity;
             await cart.save();
-            res.status(201).json({message:"Item quantity increased",cart})
+            return res.status(201).json({message:"Item quantity increased",cart})
         } else {
             cart.items.push({
                 img,
@@ -54,7 +59,7 @@ app.post('/cart/new', async (req, res) => {
                 quantity,
             });
             await cart.save();
-            res.status(200).json({ message: "Cart updated successfully", cart });
+            return res.status(200).json({ message: "Cart updated successfully", cart });
         }
         
     } catch (error) {
@@ -108,6 +113,62 @@ app.post('/login', async (req,res)=>{
         res.status(400).json({error:error.message})
     }
 })
+// app.post('/users/google',async(req,res)=>{
+//     console.log("request body",req.body)
+//     try{
+//       const { email , username} =req.body;
+//     const existingUser = await User.findOne({ email });
+//       console.log("existing user",existingUser)
+//     if(existingUser){
+//       const token = generateToken();
+//         res.cookie("authToken", token, {
+//           httpOnly: true,
+//           secure: true,
+//           sameSite: "none",
+//           maxAge: TOKEN_EXPIRATION_TIME,
+//         });
+//       res.status(200).json({ message: "Login successful",user: {
+//         id: existingUser._id,
+//         email: existingUser.email,
+//         username: existingUser.username,
+//       }
+//       })
+//     }
+//     else{
+      
+//       const newUser = new User({
+//         email,
+//         username,
+//         cart: [],
+//         wishlist: []
+//       });
+//       console.log("newuser",newUser)
+//       const savedUser = await newUser.save();
+//       const token = generateToken();
+//       res.cookie("authToken", token, {
+//         httpOnly: true,
+//         secure: true,
+//         sameSite: "none",
+//         maxAge: TOKEN_EXPIRATION_TIME,
+//       });
+//       console.log("Saved User:", savedUser);
+//       res.status(201).json({
+//         message: "User registered successfully",
+//         user: {
+//           id: savedUser._id,
+//           email: savedUser.email,
+//           username: savedUser.username,
+//           idToken:token
+//         },
+//       });
+//     }
+//     }catch(error){
+//       res.status(500).json({ message: "Server error", error });
+  
+//     }
+  
+  
+//   })
 app.post('/wishlist/new', async (req,res) =>{
     const {email, img , name ,desc, price} =req.body;
     try {
